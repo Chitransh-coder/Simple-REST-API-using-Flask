@@ -24,6 +24,27 @@ def create_store():
     stores[snid] = new_store
     return new_store, 201
 
+
+@app.get("/store/<store_id>")
+def get_store(store_id):
+    if store_id in stores:
+        return stores[store_id]
+    else:
+        abort(404, message="Store not found")
+
+
+@app.delete("/store/<store_id>")
+def delete_store(store_id):
+    if store_id in stores:
+        del stores[store_id]
+        return {"message" : "Store deleted"}
+    else:
+        abort(404, message="Store not found")
+
+@app.get("/item")
+def get_items():
+    return {"items" : list(items.values())}
+
 @app.post("/item")
 def create_item_in_store():
     data = request.get_json()
@@ -41,16 +62,32 @@ def create_item_in_store():
     items[inid] = new_item
     return new_item, 201
 
-@app.get("/store/<store_id>")
-def get_store(store_id):
-    if store_id in stores:
-        return stores[store_id]
-    else:
-        abort(404, message="Store not found")
-
 @app.get("/item/<item_id>")
 def get_items_in_store(item_id):
     if item_id in items:
         return items[item_id]
+    else:
+        abort(404, message="Item not found")
+
+
+@app.delete("/item/<item_id>")
+def delete_item(item_id):
+    data = request.get_json()
+    if "name" not in data or "price" not in data or "store_id" not in data:
+        abort(400, message="Ensure \"name\", \"price\", and \"store_id\" are provided")
+    if item_id in items:
+        del items[item_id]
+        return {"message" : "Item deleted"}
+    else:
+        abort(404, message="Item not found")
+
+@app.put("/item/<item_id>")
+def update_item(item_id):
+    data = request.get_json()
+    if "name" not in data or "price" not in data or "store_id" not in data:
+        abort(400, message="Ensure \"name\", \"price\", and \"store_id\" are provided")
+    if item_id in items:
+        items[item_id] = data
+        return {"message" : "Item updated"}
     else:
         abort(404, message="Item not found")
