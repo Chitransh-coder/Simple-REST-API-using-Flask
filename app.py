@@ -1,4 +1,5 @@
 from flask import Flask, request
+from flask_smorest import abort
 from db import items, stores
 from uuid import uuid4
 
@@ -11,6 +12,11 @@ def get_stores():
 @app.post("/store")
 def create_store():
     data = request.get_json()
+    if "name" not in data:
+        abort(400, message="Ensure \"name\" is provided")
+    for s in stores.values():
+        if s["name"] == data["name"]:
+            abort(409, message="Store already exists")
     snid = uuid4().hex
     new_store = {
         **data, "id" : snid
@@ -21,8 +27,13 @@ def create_store():
 @app.post("/item")
 def create_item_in_store():
     data = request.get_json()
+    if "name" not in data or "price" not in data or "store_id" not in data:
+        abort(400, message="Ensure \"name\", \"price\", and \"store_id\" are provided")
     if data["store_id"] not in stores:
-        return {"message" : "Store not found"}, 404
+        abort (404, message="Store not found")
+    for i in items.values():
+        if i["name"] == data["name"] and i["store_id"] == data["store_id"]:
+            abort(409, message="Item already exists in store")
     inid = uuid4().hex
     new_item = {
         **data, "id" : inid
@@ -35,11 +46,11 @@ def get_store(store_id):
     if store_id in stores:
         return stores[store_id]
     else:
-        return {"message" : "Store not found"}, 404
+        abort(404, message="Store not found")
 
 @app.get("/item/<item_id>")
 def get_items_in_store(item_id):
     if item_id in items:
         return items[item_id]
     else:
-        return {"message" : "Item not found"}, 404
+        abort(404, message="Item not found")
