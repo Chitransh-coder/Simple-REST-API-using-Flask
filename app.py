@@ -1,58 +1,45 @@
 from flask import Flask, request
+from db import items, stores
+from uuid import uuid4
 
 app = Flask(__name__)
 
-stores = [
-    {
-        "name" : "My Wonderful Store",
-        "items" : [
-            {
-                "name" : "First Item",
-                "price" : 750
-            }
-        ]
-    }
-]
-
 @app.get("/store")
 def get_stores():
-    return {"stores" : stores}
+    return {"stores" : list(stores.values())}
 
 @app.post("/store")
 def create_store():
-    request_data = request.get_json()
+    data = request.get_json()
+    snid = uuid4().hex
     new_store = {
-        "name" : request_data["name"],
-        "items" : []
+        **data, "id" : snid
     }
-    stores.append(new_store)
+    stores[snid] = new_store
     return new_store, 201
 
-@app.post("/store/<string:name>/item")
-def create_item_in_store(name):
-    request_data = request.get_json()
-    for store in stores:
-        if store["name"] == name:
-            new_item = {
-                "name" : request_data["name"],
-                "price" : request_data["price"]
-            }
-            store["items"].append(new_item)
-            return new_item, 201
-    return {"message" : "Store not found"}, 404
+@app.post("/item")
+def create_item_in_store():
+    data = request.get_json()
+    if data["store_id"] not in stores:
+        return {"message" : "Store not found"}, 404
+    inid = uuid4().hex
+    new_item = {
+        **data, "id" : inid
+    }
+    items[inid] = new_item
+    return new_item, 201
 
-@app.get("/store/<string:name>")
-def get_store(name):
-    for store in stores:
-        if store["name"] == name:
-            return store
-    return {"message" : "Store not found"}, 404
+@app.get("/store/<store_id>")
+def get_store(store_id):
+    if store_id in stores:
+        return stores[store_id]
+    else:
+        return {"message" : "Store not found"}, 404
 
-@app.get("/store/<string:name>/item")
-def get_items_in_store(name):
-    for store in stores:
-        if store["name"] == name:
-            return {"items" : store["items"]}
-        else:
-            return {"message" : "Item not found"}, 404
-    return {"message" : "Store not found"}, 404
+@app.get("/item/<item_id>")
+def get_items_in_store(item_id):
+    if item_id in items:
+        return items[item_id]
+    else:
+        return {"message" : "Item not found"}, 404
