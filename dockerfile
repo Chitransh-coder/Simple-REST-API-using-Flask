@@ -1,6 +1,7 @@
 FROM python
 EXPOSE 5000
+COPY requirements.txt .
+RUN pip install -r requirements.txt
 WORKDIR /app
 COPY . .
-RUN pip install flask
 CMD [ "flask", "run", "--host", "0.0.0.0" ]
