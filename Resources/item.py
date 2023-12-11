@@ -4,6 +4,8 @@ from db import items, stores
 from uuid import uuid4
 from flask.views import MethodView
 
+from schemas import ItemSchema, ItemUpdateSchema
+
 blp  = Blueprint("item", __name__, description="Item related operations")
 
 @blp.route("/item/<item_id>")
@@ -24,10 +26,8 @@ class Item(MethodView):
         else:
             abort(404, message="Item not found")
 
-    def put(self, item_id):
-        data = request.get_json()
-        if "name" not in data or "price" not in data or "store_id" not in data:
-            abort(400, message="Ensure \"name\", \"price\", and \"store_id\" are provided")
+    @blp.arguments(ItemUpdateSchema)
+    def put(self, data, item_id):
         if item_id in items:
             items[item_id] = data
             return {"message" : "Item updated"}
@@ -38,10 +38,9 @@ class Item(MethodView):
 class ItemList(MethodView):
     def get(self):
         return {"items" : list(items.values())}
-    def post(self):
-        data = request.get_json()
-        if "name" not in data or "price" not in data or "store_id" not in data:
-            abort(400, message="Ensure \"name\", \"price\", and \"store_id\" are provided")
+    
+    @blp.arguments(ItemSchema)
+    def post(self, data):
         if data["store_id"] not in stores:
             abort (404, message="Store not found")
         for i in items.values():

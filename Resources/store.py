@@ -4,6 +4,8 @@ from db import items, stores
 from uuid import uuid4
 from flask.views import MethodView
 
+from schemas import StoreSchema
+
 blp  = Blueprint("store", __name__, description="Store related operations")
 
 @blp.route("/store/<store_id>")
@@ -25,11 +27,8 @@ class Store(MethodView):
 class StoreList(MethodView):
     def get(self):
         return {"stores" : list(stores.values())}
-    
-    def post(self):
-        data = request.get_json()
-        if "name" not in data:
-            abort(400, message="Ensure \"name\" is provided")
+    @blp.arguments(StoreSchema)
+    def post(self, data):
         for s in stores.values():
             if s["name"] == data["name"]:
                 abort(409, message="Store already exists")
