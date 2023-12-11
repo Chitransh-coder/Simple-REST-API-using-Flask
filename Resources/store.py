@@ -10,6 +10,7 @@ blp  = Blueprint("store", __name__, description="Store related operations")
 
 @blp.route("/store/<store_id>")
 class Store(MethodView):
+    @blp.response(200, StoreSchema)
     def get(self, store_id):
         if store_id in stores:
             return stores[store_id]
@@ -25,9 +26,12 @@ class Store(MethodView):
 
 @blp.route("/store")
 class StoreList(MethodView):
+    @blp.response(200, StoreSchema(many=True))
     def get(self):
         return {"stores" : list(stores.values())}
+    
     @blp.arguments(StoreSchema)
+    @blp.response(201, StoreSchema)
     def post(self, data):
         for s in stores.values():
             if s["name"] == data["name"]:

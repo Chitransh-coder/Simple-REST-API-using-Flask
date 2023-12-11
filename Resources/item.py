@@ -10,16 +10,15 @@ blp  = Blueprint("item", __name__, description="Item related operations")
 
 @blp.route("/item/<item_id>")
 class Item(MethodView):
+    @blp.response(200, ItemSchema)
     def get(self, item_id):
         if item_id in items:
             return items[item_id]
         else:
             abort(404, message="Item not found")
-    
-    def delete(self, item_id):
-        data = request.get_json()
-        if "name" not in data or "price" not in data or "store_id" not in data:
-            abort(400, message="Ensure \"name\", \"price\", and \"store_id\" are provided")
+
+    @blp.response(200, ItemSchema)
+    def delete(self, data, item_id):
         if item_id in items:
             del items[item_id]
             return {"message" : "Item deleted"}
@@ -27,6 +26,7 @@ class Item(MethodView):
             abort(404, message="Item not found")
 
     @blp.arguments(ItemUpdateSchema)
+    @blp.response(200, ItemSchema)
     def put(self, data, item_id):
         if item_id in items:
             items[item_id] = data
@@ -36,10 +36,12 @@ class Item(MethodView):
 
 @blp.route("/item")
 class ItemList(MethodView):
+    @blp.response(200, ItemSchema(many=True))
     def get(self):
         return {"items" : list(items.values())}
-    
+
     @blp.arguments(ItemSchema)
+    @blp.response(201, ItemSchema)
     def post(self, data):
         if data["store_id"] not in stores:
             abort (404, message="Store not found")
