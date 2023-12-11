@@ -17,7 +17,6 @@ class Item(MethodView):
         else:
             abort(404, message="Item not found")
 
-    @blp.response(200, ItemSchema)
     def delete(self, data, item_id):
         if item_id in items:
             del items[item_id]
@@ -38,7 +37,7 @@ class Item(MethodView):
 class ItemList(MethodView):
     @blp.response(200, ItemSchema(many=True))
     def get(self):
-        return {"items" : list(items.values())}
+        return items.values()
 
     @blp.arguments(ItemSchema)
     @blp.response(201, ItemSchema)
