@@ -1,6 +1,5 @@
 from flask import request
 from flask_smorest import abort, Blueprint
-from db import items, stores
 from uuid import uuid4
 from flask.views import MethodView
 
@@ -16,7 +15,7 @@ class Store(MethodView):
             return stores[store_id]
         else:
             abort(404, message="Store not found")
-    
+
     def delete(self, store_id):
         if store_id in stores:
             del stores[store_id]
@@ -29,7 +28,7 @@ class StoreList(MethodView):
     @blp.response(200, StoreSchema(many=True))
     def get(self):
         return {"stores" : list(stores.values())}
-    
+
     @blp.arguments(StoreSchema)
     @blp.response(201, StoreSchema)
     def post(self, data):
