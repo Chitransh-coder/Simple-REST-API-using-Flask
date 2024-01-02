@@ -1,12 +1,9 @@
-from flask import request
 from flask_smorest import abort, Blueprint
-from uuid import uuid4
 from flask.views import MethodView
-from flask_sqlalchemy import SQLAlchemy
 from db import db
 from sqlalchemy.exc import SQLAlchemyError
 from schemas import ItemSchema, ItemUpdateSchema
-from Model import Itemdb
+from Model import ItemModel
 
 blp  = Blueprint("item", __name__, description="Item related operations")
 
@@ -14,37 +11,41 @@ blp  = Blueprint("item", __name__, description="Item related operations")
 class Item(MethodView):
     @blp.response(200, ItemSchema)
     def get(self, item_id):
-        if item_id in items:
-            return items[item_id]
-        else:
-            abort(404, message="Item not found")
+        item = ItemModel.query.get_or_404(item_id)
+        return item
 
     def delete(self, data, item_id):
-        if item_id in items:
-            del items[item_id]
-            return {"message" : "Item deleted"}
-        else:
-            abort(404, message="Item not found")
+        item = ItemModel.query.get_or_404(item_id)
+        raise NotImplementedError("Delete not implemented")
 
     @blp.arguments(ItemUpdateSchema)
     @blp.response(200, ItemSchema)
     def put(self, data, item_id):
-        if item_id in items:
-            items[item_id] = data
-            return {"message" : "Item updated"}
+        item = ItemModel.query.get(item_id)
+        item.name = data["name"]
+        item.price = data["price"]
+        if item:
+            try:
+                db.session.commit()
+            except SQLAlchemyError as e:
+                abort(500, message="Internal server error")
         else:
-            abort(404, message="Item not found")
+            item = ItemModel(id=item_id,**data)
+            db.session.add(item)
+            db.session.commit()
+        return item
+
 
 @blp.route("/item")
 class ItemList(MethodView):
     @blp.response(200, ItemSchema(many=True))
     def get(self):
-        return items.values()
+        return ItemModel.query.all()
 
     @blp.arguments(ItemSchema)
     @blp.response(201, ItemSchema)
     def post(self, data):
-        new_item = Itemdb(**data)
+        new_item = ItemModel(**data)
 
         try:
             db.session.add(new_item)

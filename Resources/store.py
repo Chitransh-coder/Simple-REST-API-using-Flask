@@ -3,9 +3,9 @@ from flask import request
 from flask_smorest import abort, Blueprint
 from uuid import uuid4
 from flask.views import MethodView
-from Model import Storedb
+from Model import StoreModel
 from db import db
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from schemas import StoreSchema
 
 blp  = Blueprint("store", __name__, description="Store related operations")
@@ -14,28 +14,23 @@ blp  = Blueprint("store", __name__, description="Store related operations")
 class Store(MethodView):
     @blp.response(200, StoreSchema)
     def get(self, store_id):
-        if store_id in stores:
-            return stores[store_id]
-        else:
-            abort(404, message="Store not found")
+        store = StoreModel.query.get_or_404(store_id)
+        return store
 
     def delete(self, store_id):
-        if store_id in stores:
-            del stores[store_id]
-            return {"message" : "Store deleted"}
-        else:
-            abort(404, message="Store not found")
+        store = StoreModel.query.get_or_404(store_id)
+        raise NotImplementedError("Delete not implemented")
 
 @blp.route("/store")
 class StoreList(MethodView):
     @blp.response(200, StoreSchema(many=True))
     def get(self):
-        return {"stores" : list(stores.values())}
+        return StoreModel.query.all()
 
     @blp.arguments(StoreSchema)
     @blp.response(201, StoreSchema)
     def post(self, data):
-        store = Storedb(**data)
+        store = StoreModel(**data)
 
         try:
             db.session.add(store)

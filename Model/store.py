@@ -1,6 +1,6 @@
 from db import db
 
-class Storedb(db.Model):
+class StoreModel(db.Model):
     __tablename__ = "store"
 
     id = db.Column(db.Integer, primary_key=True)

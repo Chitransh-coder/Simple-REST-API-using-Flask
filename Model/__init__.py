@@ -1,2 +1,2 @@
-from Model.item import Itemdb
-from Model.store import Storedb
+from Model.item import ItemModel
+from Model.store import StoreModel

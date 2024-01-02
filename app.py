@@ -1,7 +1,6 @@
 from flask import Flask
 import os
 from db import db
-import Model
 from flask_smorest import Api
 from Resources.item import blp as itemblp
 from Resources.store import blp as storeblp
