@@ -1,7 +1,5 @@
 from sqlite3 import IntegrityError
-from flask import request
 from flask_smorest import abort, Blueprint
-from uuid import uuid4
 from flask.views import MethodView
 from Model import StoreModel
 from db import db
@@ -31,8 +29,8 @@ class StoreList(MethodView):
 
     @blp.arguments(StoreSchema)
     @blp.response(201, StoreSchema)
-    def post(self, data):
-        store = StoreModel(id=data["id"],**data)
+    def post(self, storedata):
+        store = StoreModel(**storedata)
 
         try:
             db.session.add(store)

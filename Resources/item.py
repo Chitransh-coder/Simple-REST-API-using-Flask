@@ -24,17 +24,14 @@ class Item(MethodView):
     @blp.response(200, ItemSchema)
     def put(self, data, item_id):
         item = ItemModel.query.get(item_id)
-        item.name = data["name"]
-        item.price = data["price"]
         if item:
-            try:
-                db.session.commit()
-            except SQLAlchemyError as e:
-                abort(500, message="Internal server error")
+            item.price = data["price"]
+            item.name = data["name"]
         else:
-            item = ItemModel(id=item_id,**data)
-            db.session.add(item)
-            db.session.commit()
+            item = ItemModel(id=item_id, **data)
+
+        db.session.add(item)
+        db.session.commit()
         return item
 
 
