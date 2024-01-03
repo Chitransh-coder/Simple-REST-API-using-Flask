@@ -16,7 +16,9 @@ class Item(MethodView):
 
     def delete(self, data, item_id):
         item = ItemModel.query.get_or_404(item_id)
-        raise NotImplementedError("Delete not implemented")
+        db.session.delete(item)
+        db.session.commit()
+        return {"message": "Item deleted"}
 
     @blp.arguments(ItemUpdateSchema)
     @blp.response(200, ItemSchema)
