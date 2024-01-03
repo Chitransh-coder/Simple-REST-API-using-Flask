@@ -4,6 +4,7 @@ from db import db
 from flask_smorest import Api
 from Resources.item import blp as itemblp
 from Resources.store import blp as storeblp
+from Resources.tags import blp as tagblp
 
 def create_app(db_uri=None):
     app = Flask(__name__)
@@ -27,5 +28,6 @@ def create_app(db_uri=None):
 
     api.register_blueprint(itemblp)
     api.register_blueprint(storeblp)
+    api.register_blueprint(tagblp)
 
     return app
