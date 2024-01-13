@@ -6,6 +6,7 @@ from flask_smorest import Api
 from Resources.item import blp as itemblp
 from Resources.store import blp as storeblp
 from Resources.tags import blp as tagblp
+from Resources.user import blp as userblp
 
 def create_app(db_uri=None):
     app = Flask(__name__)
@@ -24,7 +25,7 @@ def create_app(db_uri=None):
     db.init_app(app)
     JWTManager(app)
 
-    
+
     with app.app_context():
         db.create_all()
 
@@ -33,5 +34,6 @@ def create_app(db_uri=None):
     api.register_blueprint(itemblp)
     api.register_blueprint(storeblp)
     api.register_blueprint(tagblp)
+    api.register_blueprint(userblp)
 
     return app
