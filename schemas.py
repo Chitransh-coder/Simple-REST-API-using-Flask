@@ -1,7 +1,5 @@
-from os import name
 from marshmallow import Schema, fields
 
-from Model import item, store
 
 class PlainStoreSchema(Schema):
     id = fields.Int(dump_only=True)
