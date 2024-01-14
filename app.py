@@ -25,6 +25,11 @@ def create_app(db_uri=None):
     db.init_app(app)
     jwt = JWTManager(app)
 
+    @jwt.additional_claims_loader
+    def add_claims_to_jwt(identity):
+        if identity == 1:
+            return {"is_admin": True}
+        return {"is_admin": False}
     @jwt.expired_token_loader
     def expired_token_callback():
         return jsonify({"message": "The token has expired", "error": "token_expired"}, 401)
