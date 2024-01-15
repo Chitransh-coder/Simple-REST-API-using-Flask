@@ -1,5 +1,6 @@
 from flask import Flask, jsonify
 import os
+from blocklist import Blocklist
 from db import db
 from flask_jwt_extended import JWTManager
 from flask_smorest import Api
@@ -25,11 +26,12 @@ def create_app(db_uri=None):
     db.init_app(app)
     jwt = JWTManager(app)
 
-    @jwt.additional_claims_loader
-    def add_claims_to_jwt(identity):
-        if identity == 1:
-            return {"is_admin": True}
-        return {"is_admin": False}
+    # @jwt.additional_claims_loader
+    # def add_claims_to_jwt(identity):
+    #     if identity == 1:
+    #         return {"is_admin": True}
+    #     return {"is_admin": False}
+
     @jwt.expired_token_loader
     def expired_token_callback():
         return jsonify({"message": "The token has expired", "error": "token_expired"}, 401)
@@ -42,6 +44,30 @@ def create_app(db_uri=None):
     def missing_token_callback(error):
         return jsonify({"message": "Request does not contain an access token", "error": "authorization_required"}, 401)
 
+    @jwt.token_in_blocklist_loader
+    def check_if_token_in_blocklist(jwt_header, jwt_payload):
+        return jwt_payload["jti"] in Blocklist.query.all()
+
+    @jwt.needs_fresh_token_loader
+    def token_not_fresh_callback(jwt_header, jwt_payload):
+        return (
+            jsonify(
+                {
+                    "description": "Refresh the token on login page",
+                    "error": "fresh_token_required",
+                }
+            ),
+            401,
+        )
+
+    @jwt.revoked_token_loader
+    def revoked_token_callback(jwt_header, jwt_payload):
+        return (
+            jsonify(
+                {"description": "The token has been revoked.", "error": "token_revoked"}
+            ),
+            401,
+        )
 
     with app.app_context():
         db.create_all()
